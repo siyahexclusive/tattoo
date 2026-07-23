@@ -107,7 +107,10 @@ export function generateConsentFormPDF(form: ConsentForm, settings: StudioSettin
   drawField('E-Mail:', form.clientData.email, marginX + 3, itemY);
 
   // Right Box: Tattoo Info
+  doc.setFillColor(250, 250, 250);
   doc.rect(marginX + 95, startBoxY, 85, 42, 'F');
+  
+  doc.setTextColor(60, 60, 60); // Ensure text color is set correctly
   let itemYRight = startBoxY + 5;
   const drawFieldRight = (label: string, value: string, x: number, y: number) => {
     doc.setFont('helvetica', 'bold');

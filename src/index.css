@@ -38,6 +38,9 @@ html, body {
   color: #d1d1d1;
   font-family: var(--font-sans);
   min-height: 100vh;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Crisp minimal scrollbar design for Elegant Dark list containers */
