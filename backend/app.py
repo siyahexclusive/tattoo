@@ -102,6 +102,35 @@ def login():
         }), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
+@app.route('/api/change_credentials', methods=['POST'])
+def change_credentials():
+    data = request.json
+    current_username = data.get('currentUsername', '').strip()
+    current_password = data.get('currentPassword', '')
+    new_username = data.get('newUsername', '').strip()
+    new_password = data.get('newPassword', '')
+    
+    user = User.query.filter_by(username=current_username).first()
+    if not user or user.passwordHash != current_password:
+        return jsonify({'error': 'Invalid current credentials'}), 401
+        
+    if new_username != current_username:
+        existing = User.query.filter_by(username=new_username).first()
+        if existing:
+            return jsonify({'error': 'Username already taken'}), 409
+            
+    user.username = new_username
+    user.passwordHash = new_password
+    db.session.commit()
+    
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'role': user.role,
+        'fullName': user.fullName
+    }), 200
+
+
 @app.route('/api/settings', methods=['GET', 'POST'])
 def handle_settings():
     if request.method == 'GET':

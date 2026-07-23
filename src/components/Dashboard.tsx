@@ -134,26 +134,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
     
     try {
-      const user = await db.users.where('username').equals(currentUsername).first();
-      if (!user || user.passwordHash !== currentPassword) {
-        setCredentialsMessage({ text: 'Die aktuellen Zugangsdaten sind falsch.', isError: true });
+      const res = await fetch('http://localhost:5000/api/change_credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentUsername,
+          currentPassword,
+          newUsername,
+          newPassword
+        })
+      });
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          setCredentialsMessage({ text: 'Die aktuellen Zugangsdaten sind falsch.', isError: true });
+        } else if (res.status === 409) {
+          setCredentialsMessage({ text: 'Dieser Benutzername ist bereits vergeben.', isError: true });
+        } else {
+          setCredentialsMessage({ text: 'Ein Fehler ist aufgetreten.', isError: true });
+        }
         return;
       }
       
-      if (newUsername !== currentUsername) {
-        const existing = await db.users.where('username').equals(newUsername).first();
-        if (existing) {
-          setCredentialsMessage({ text: 'Dieser Benutzername ist bereits vergeben.', isError: true });
-          return;
-        }
-      }
-
-      await db.users.update(user.id, {
-        username: newUsername,
-        passwordHash: newPassword
-      });
-      
-      const updatedUser = { ...user, username: newUsername, passwordHash: newPassword };
+      const updatedUser = await res.json();
       sessionStorage.setItem('current_user', JSON.stringify(updatedUser));
       
       setCurrentUsername(newUsername);
