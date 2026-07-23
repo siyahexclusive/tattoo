@@ -76,37 +76,22 @@ export default function App() {
     setLoginError(false);
     
     try {
-      let user = null;
-      try {
-        user = await db.users.where('username').equals(loginUsername.trim()).first();
-      } catch (dbError) {
-        console.warn("Database fetch failed, falling back to local verification if applicable.", dbError);
-      }
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: loginUsername.trim(),
+          password: loginPassword
+        })
+      });
       
-      if (user && user.passwordHash === loginPassword) {
+      if (res.ok) {
+        const user = await res.json();
         setLoginAttempts(0);
         setIsTerminalUnlocked(true);
         try {
           sessionStorage.setItem('terminal_unlocked', 'true');
           sessionStorage.setItem('current_user', JSON.stringify(user));
-        } catch (err) {
-          console.error(err);
-        }
-        setLoginUsername('');
-        setLoginPassword('');
-      } else if (loginUsername === 'admin' && loginPassword === 'admin123') {
-        // Seamless fallback for admin if DB is uninitialized or offline
-        setLoginAttempts(0);
-        setIsTerminalUnlocked(true);
-        try {
-          sessionStorage.setItem('terminal_unlocked', 'true');
-          sessionStorage.setItem('current_user', JSON.stringify({
-            id: 'admin_user',
-            username: 'admin',
-            passwordHash: 'admin123',
-            role: 'ADMIN',
-            fullName: 'Studio Administrator'
-          }));
         } catch (err) {
           console.error(err);
         }
