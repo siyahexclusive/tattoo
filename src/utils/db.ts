@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ConsentForm, PdfDocument, StudioSettings, User } from '../types';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export const useLiveForms = () => {
   const [forms, setForms] = useState<ConsentForm[]>([]);
