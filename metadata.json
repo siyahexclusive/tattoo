@@ -1,0 +1,6 @@
+{
+  "name": "Tattoo Einverständnis-Manager",
+  "description": "Professionelles Erfassungssystem für Siyah Tattoos. DSGVO-konforme Erfassung von Tätowierungs-Einverständniserklärungen und digitalen Unterschriften.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
