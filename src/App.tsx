@@ -89,23 +89,9 @@ export default function App() {
         }
         setLoginUsername('');
         setLoginPassword('');
-      } else {
-        const newAttempts = loginAttempts + 1;
-        if (newAttempts >= 5) {
-          setLockoutTimeLeft(60);
-          setLoginAttempts(0);
-        } else {
-          setLoginAttempts(newAttempts);
-        }
-        setLoginError(true);
-        if (navigator.vibrate) navigator.vibrate(100);
-      }
-    } catch (error) {
-      console.error("Firebase connection error:", error);
-      
-      // Fallback if Firebase is not configured (dummy keys)
-      if (loginUsername === 'admin' && loginPassword === 'admin123') {
-        alert("Achtung: Offline-Modus. Firebase ist nicht konfiguriert.");
+      } else if (!user && loginUsername === 'admin' && loginPassword === 'admin123') {
+        // Fallback if Firebase is offline/empty and user doesn't exist yet
+        alert("Achtung: Offline-Modus oder Datenbank leer. Standard-Admin wird verwendet.");
         setLoginAttempts(0);
         setIsTerminalUnlocked(true);
         sessionStorage.setItem('terminal_unlocked', 'true');
@@ -119,8 +105,19 @@ export default function App() {
         setLoginUsername('');
         setLoginPassword('');
       } else {
+        const newAttempts = loginAttempts + 1;
+        if (newAttempts >= 5) {
+          setLockoutTimeLeft(60);
+          setLoginAttempts(0);
+        } else {
+          setLoginAttempts(newAttempts);
+        }
         setLoginError(true);
+        if (navigator.vibrate) navigator.vibrate(100);
       }
+    } catch (error) {
+      console.error("Firebase connection error:", error);
+      setLoginError(true);
     }
   };
 
