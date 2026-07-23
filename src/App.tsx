@@ -75,29 +75,52 @@ export default function App() {
     
     setLoginError(false);
     
-    const user = await db.users.where('username').equals(loginUsername.trim()).first();
-    
-    if (user && user.passwordHash === loginPassword) {
-      setLoginAttempts(0);
-      setIsTerminalUnlocked(true);
-      try {
-        sessionStorage.setItem('terminal_unlocked', 'true');
-        sessionStorage.setItem('current_user', JSON.stringify(user));
-      } catch (err) {
-        console.error(err);
-      }
-      setLoginUsername('');
-      setLoginPassword('');
-    } else {
-      const newAttempts = loginAttempts + 1;
-      if (newAttempts >= 5) {
-        setLockoutTimeLeft(60);
+    try {
+      const user = await db.users.where('username').equals(loginUsername.trim()).first();
+      
+      if (user && user.passwordHash === loginPassword) {
         setLoginAttempts(0);
+        setIsTerminalUnlocked(true);
+        try {
+          sessionStorage.setItem('terminal_unlocked', 'true');
+          sessionStorage.setItem('current_user', JSON.stringify(user));
+        } catch (err) {
+          console.error(err);
+        }
+        setLoginUsername('');
+        setLoginPassword('');
       } else {
-        setLoginAttempts(newAttempts);
+        const newAttempts = loginAttempts + 1;
+        if (newAttempts >= 5) {
+          setLockoutTimeLeft(60);
+          setLoginAttempts(0);
+        } else {
+          setLoginAttempts(newAttempts);
+        }
+        setLoginError(true);
+        if (navigator.vibrate) navigator.vibrate(100);
       }
-      setLoginError(true);
-      if (navigator.vibrate) navigator.vibrate(100);
+    } catch (error) {
+      console.error("Firebase connection error:", error);
+      
+      // Fallback if Firebase is not configured (dummy keys)
+      if (loginUsername === 'admin' && loginPassword === 'admin123') {
+        alert("Achtung: Offline-Modus. Firebase ist nicht konfiguriert.");
+        setLoginAttempts(0);
+        setIsTerminalUnlocked(true);
+        sessionStorage.setItem('terminal_unlocked', 'true');
+        sessionStorage.setItem('current_user', JSON.stringify({
+          id: 'admin_user',
+          username: 'admin',
+          passwordHash: 'admin123',
+          role: 'ADMIN',
+          fullName: 'Studio Administrator'
+        }));
+        setLoginUsername('');
+        setLoginPassword('');
+      } else {
+        setLoginError(true);
+      }
     }
   };
 
