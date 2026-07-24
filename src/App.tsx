@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, useLiveForms, useLiveSettings } from './utils/db';
+import { db, useLiveForms, useLiveSettings, API_BASE } from './utils/db';
 import { 
   ShieldCheck, 
   Lock, 
@@ -76,13 +76,12 @@ export default function App() {
     setLoginError(false);
     
     try {
-      // In production (Netlify), call the function URL directly.
-      // /.netlify/functions/* is always served before any redirect rules,
-      // so it cannot be intercepted by the /* SPA fallback.
-      // In local dev, the Vite proxy forwards /api/login → Flask on port 5000.
-      const loginUrl = import.meta.env.DEV
-        ? '/api/login'
-        : '/.netlify/functions/login';
+      // Priority: Render backend (VITE_API_URL) → local dev proxy → Netlify Function
+      const loginUrl = import.meta.env.VITE_API_URL
+        ? `${API_BASE}/login`
+        : import.meta.env.DEV
+          ? '/api/login'
+          : '/.netlify/functions/login';
 
       const res = await fetch(loginUrl, {
         method: 'POST',

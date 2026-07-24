@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { ConsentForm, PdfDocument, StudioSettings, User } from '../types';
 
-const API_BASE = '/api';
+// ---------------------------------------------------------------------------
+// API Base URL
+// ---------------------------------------------------------------------------
+// In production: set VITE_API_URL in Netlify to your Render backend URL.
+// Example: https://siyah-tattoo-backend.onrender.com/api
+//
+// In local dev: falls back to /api which Vite proxies to Flask on port 5000.
+// ---------------------------------------------------------------------------
+export const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export const useLiveForms = () => {
   const [forms, setForms] = useState<ConsentForm[]>([]);

@@ -1,0 +1,43 @@
+# render.yaml — Render Blueprint for one-click deployment
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ── Flask Backend ────────────────────────────────────────────────────────
+  - type: web
+    name: siyah-tattoo-backend
+    env: python
+    region: frankfurt           # Closest to Berlin — lowest latency
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app -c gunicorn.conf.py
+    healthCheckPath: /api/health
+
+    envVars:
+      # PostgreSQL connection string — injected automatically from the database below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: siyah-tattoo-db
+          property: connectionString
+
+      # Admin credentials — fill these in the Render dashboard after deploy
+      - key: ADMIN_USERNAME
+        sync: false             # Mark sync: false → you enter the value manually
+
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # Auto-generated secure random key for Flask sessions
+      - key: SECRET_KEY
+        generateValue: true
+
+      # Set to your Netlify URL, e.g.: https://siyah-tattoos.netlify.app
+      # Multiple origins: https://a.netlify.app,https://custom-domain.com
+      - key: CORS_ORIGINS
+        sync: false
+
+# ── PostgreSQL Database ──────────────────────────────────────────────────
+databases:
+  - name: siyah-tattoo-db
+    databaseName: siyah_tattoo
+    user: siyah_tattoo
+    region: frankfurt
