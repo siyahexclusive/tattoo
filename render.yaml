@@ -7,12 +7,16 @@ services:
     name: siyah-tattoo-backend
     env: python
     region: frankfurt           # Closest to Berlin — lowest latency
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app -c gunicorn.conf.py
+    # We remove rootDir so the build script runs from the project root
+    buildCommand: ./build.sh
+    startCommand: cd backend && gunicorn app:app -c gunicorn.conf.py
     healthCheckPath: /api/health
 
     envVars:
+      # Tell Render to install Node.js alongside Python
+      - key: NODE_VERSION
+        value: 20
+
       # PostgreSQL connection string — injected automatically from the database below
       - key: DATABASE_URL
         fromDatabase:
