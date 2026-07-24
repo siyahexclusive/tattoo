@@ -5,6 +5,12 @@ import type { Context } from "@netlify/functions";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+// Netlify v2: declare this function's URL path directly.
+// This is more reliable than redirect rules in netlify.toml.
+export const config = {
+  path: "/api/login",
+};
+
 export default async (req: Request, context: Context) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {

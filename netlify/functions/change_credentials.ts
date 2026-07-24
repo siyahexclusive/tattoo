@@ -5,6 +5,11 @@ import type { Context } from "@netlify/functions";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
+// Netlify v2: declare this function's URL path directly.
+export const config = {
+  path: "/api/change_credentials",
+};
+
 export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
