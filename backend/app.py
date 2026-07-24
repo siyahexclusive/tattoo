@@ -310,9 +310,13 @@ def handle_pdfs(pdf_id):
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    if path and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_file(os.path.join(app.static_folder, path))
-    return send_file(os.path.join(app.static_folder, 'index.html'))
+    try:
+        if path and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_file(os.path.join(app.static_folder, path))
+        return send_file(os.path.join(app.static_folder, 'index.html'))
+    except Exception as e:
+        import traceback
+        return f"Error serving frontend: {str(e)}<br><pre>{traceback.format_exc()}</pre><br>Static folder: {app.static_folder}", 500
 
 # ---------------------------------------------------------------------------
 # Startup
