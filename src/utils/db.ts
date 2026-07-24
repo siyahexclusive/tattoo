@@ -4,12 +4,16 @@ import { ConsentForm, PdfDocument, StudioSettings, User } from '../types';
 // ---------------------------------------------------------------------------
 // API Base URL
 // ---------------------------------------------------------------------------
-// In production: set VITE_API_URL in Netlify to your Render backend URL.
-// Example: https://siyah-tattoo-backend.onrender.com/api
-//
-// In local dev: falls back to /api which Vite proxies to Flask on port 5000.
 // ---------------------------------------------------------------------------
-export const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// API Base URL
+// ---------------------------------------------------------------------------
+// In production (Netlify), point directly to the deployed Render backend.
+// In local dev, use the Vite proxy to hit the local Flask server on port 5000.
+// ---------------------------------------------------------------------------
+export const API_BASE = import.meta.env.DEV 
+  ? '/api' 
+  : 'https://tattoo-jasr.onrender.com/api';
+
 
 export const useLiveForms = () => {
   const [forms, setForms] = useState<ConsentForm[]>([]);

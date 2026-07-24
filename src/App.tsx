@@ -76,15 +76,11 @@ export default function App() {
     setLoginError(false);
     
     try {
-      // Priority: Render backend (VITE_API_URL) → local dev proxy → Netlify Function
-      const loginUrl = import.meta.env.VITE_API_URL
-        ? `${API_BASE}/login`
-        : import.meta.env.DEV
-          ? '/api/login'
-          : '/.netlify/functions/login';
+      const loginUrl = `${API_BASE}/login`;
 
       const res = await fetch(loginUrl, {
         method: 'POST',
+
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: loginUsername.trim(),
