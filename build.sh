@@ -9,8 +9,8 @@ echo "Building React frontend..."
 npm run build
 
 echo "Moving dist folder into backend directory..."
-rm -rf backend/dist
-mv dist backend/dist
+rm -rf backend/frontend_build
+mv dist backend/frontend_build
 
 echo "Installing Python dependencies..."
 pip install -r backend/requirements.txt
