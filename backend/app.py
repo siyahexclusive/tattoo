@@ -8,7 +8,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # ---------------------------------------------------------------------------
 # App & CORS
 # ---------------------------------------------------------------------------
-app = Flask(__name__)
+# Configure Flask to serve the React app from the ../dist directory
+_base_dir = os.path.abspath(os.path.dirname(__file__))
+_dist_dir = os.path.join(os.path.dirname(_base_dir), 'dist')
+
+app = Flask(__name__, static_folder=_dist_dir, static_url_path='/')
 
 # Allow requests from any configured frontend origin (set CORS_ORIGINS in Render)
 # Example: https://your-site.netlify.app
@@ -19,7 +23,7 @@ CORS(app, origins=_cors_origins.split(',') if ',' in _cors_origins else _cors_or
 # ---------------------------------------------------------------------------
 # Database — PostgreSQL on Render, SQLite for local dev
 # ---------------------------------------------------------------------------
-_base_dir = os.path.abspath(os.path.dirname(__file__))  # ← was __name__ (bug fix!)
+
 _database_url = os.environ.get(
     'DATABASE_URL',
     f'sqlite:///{os.path.join(_base_dir, "app.db")}'

@@ -4,15 +4,9 @@ import { ConsentForm, PdfDocument, StudioSettings, User } from '../types';
 // ---------------------------------------------------------------------------
 // API Base URL
 // ---------------------------------------------------------------------------
+// Both the frontend and backend are served from the same domain on Render.
 // ---------------------------------------------------------------------------
-// API Base URL
-// ---------------------------------------------------------------------------
-// In production (Netlify), point directly to the deployed Render backend.
-// In local dev, use the Vite proxy to hit the local Flask server on port 5000.
-// ---------------------------------------------------------------------------
-export const API_BASE = import.meta.env.DEV 
-  ? '/api' 
-  : 'https://tattoo-jasr.onrender.com/api';
+export const API_BASE = '/api';
 
 
 export const useLiveForms = () => {
