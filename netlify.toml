@@ -6,8 +6,20 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# SPA fallback — serve index.html for all non-API, non-function routes.
-# The /api/* routes are handled directly by Netlify Functions (via config.path in each function).
+# API redirects with force=true to prevent the /* SPA fallback from intercepting them.
+[[redirects]]
+  from = "/api/login"
+  to = "/.netlify/functions/login"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/change_credentials"
+  to = "/.netlify/functions/change_credentials"
+  status = 200
+  force = true
+
+# SPA fallback — must come LAST.
 [[redirects]]
   from = "/*"
   to = "/index.html"

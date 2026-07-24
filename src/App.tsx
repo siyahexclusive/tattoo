@@ -76,7 +76,15 @@ export default function App() {
     setLoginError(false);
     
     try {
-      const res = await fetch('/api/login', {
+      // In production (Netlify), call the function URL directly.
+      // /.netlify/functions/* is always served before any redirect rules,
+      // so it cannot be intercepted by the /* SPA fallback.
+      // In local dev, the Vite proxy forwards /api/login → Flask on port 5000.
+      const loginUrl = import.meta.env.DEV
+        ? '/api/login'
+        : '/.netlify/functions/login';
+
+      const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
