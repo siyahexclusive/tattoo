@@ -8,9 +8,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # ---------------------------------------------------------------------------
 # App & CORS
 # ---------------------------------------------------------------------------
-# Configure Flask to serve the React app from the ../dist directory
+# Configure Flask to serve the React app from the local dist directory
 _base_dir = os.path.abspath(os.path.dirname(__file__))
-_dist_dir = os.path.join(os.path.dirname(_base_dir), 'dist')
+_dist_dir = os.path.join(_base_dir, 'dist')
 
 app = Flask(__name__, static_folder=_dist_dir, static_url_path='/')
 
