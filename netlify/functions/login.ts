@@ -1,10 +1,9 @@
 import type { Context } from "@netlify/functions";
 
-// In a production app, these would be stored in a secure database.
-// For now, credentials are read from Netlify environment variables.
-// Set ADMIN_USERNAME and ADMIN_PASSWORD in your Netlify site's environment settings.
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+// Credentials are stored exclusively in Netlify environment variables.
+// ADMIN_USERNAME and ADMIN_PASSWORD must be set in the Netlify dashboard.
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export default async (req: Request, context: Context) => {
   // Handle CORS preflight
@@ -29,6 +28,13 @@ export default async (req: Request, context: Context) => {
   try {
     const body = await req.json();
     const { username, password } = body;
+
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration: credentials not set" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     if (
       username?.trim() === ADMIN_USERNAME &&

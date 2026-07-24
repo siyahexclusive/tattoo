@@ -328,8 +328,7 @@ export default function App() {
           </form>
 
           <div className="text-[10px] text-zinc-500 font-mono pt-2 border-t border-zinc-900 text-center space-y-1">
-            <p>Admin Login: <span className="text-zinc-400 font-bold">admin</span> / <span className="text-zinc-400 font-bold">admin123</span></p>
-            <p className="text-[9px] text-zinc-600 font-normal leading-normal mt-2">Kunden scannen bitte den QR-Code im Studio.</p>
+            <p className="text-[9px] text-zinc-600 font-normal leading-normal">Kunden scannen bitte den QR-Code im Studio.</p>
           </div>
         </div>
         

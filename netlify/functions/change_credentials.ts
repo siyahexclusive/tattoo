@@ -1,12 +1,9 @@
 import type { Context } from "@netlify/functions";
 
-// NOTE: This is a simplified in-memory approach for a single-admin setup.
-// Netlify environment variables (ADMIN_USERNAME, ADMIN_PASSWORD) hold the credentials.
-// Changing credentials here only affects the current session logic —
-// to permanently change them, update the Netlify environment variables in the dashboard.
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+// Credentials are stored exclusively in Netlify environment variables.
+// ADMIN_USERNAME and ADMIN_PASSWORD must be set in the Netlify dashboard.
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") {
@@ -30,6 +27,13 @@ export default async (req: Request, context: Context) => {
   try {
     const body = await req.json();
     const { currentUsername, currentPassword, newUsername, newPassword } = body;
+
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration: credentials not set" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     if (
       currentUsername?.trim() !== ADMIN_USERNAME ||
