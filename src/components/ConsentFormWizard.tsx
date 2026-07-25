@@ -424,29 +424,39 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                     />
                     {errors.dateOfBirth && <span className="text-[10px] text-rose-400 font-medium">{errors.dateOfBirth}</span>}
                     {isMinor && clientAge >= (tattooDetails.serviceType === 'tattoo' ? 16 : 14) && (
-                      <div className="flex flex-col p-3 bg-amber-500/5 border border-amber-500/10 rounded mt-2 space-y-2 sm:col-span-2" id="minor-warning">
+                      <div className="flex flex-col p-4 bg-amber-500/10 border border-amber-500/30 rounded mt-2 space-y-4 sm:col-span-2 shadow-inner" id="minor-warning">
                         <div className="flex items-start">
-                          <AlertTriangle className="w-4 h-4 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
-                          <div className="text-[10px] text-amber-400 leading-normal uppercase tracking-wider">
-                            <strong>Minderjähriger Kunde ({clientAge} Jahre):</strong>
-                            <br />
-                            {tattooDetails.serviceType === 'tattoo' ? 'Tätowieren ab 16 Jahren' : 'Piercen ab 14 Jahren'} erfordert die schriftliche Zustimmung und Personalausweis-Kopien der Erziehungsberechtigten beim Termin.
+                          <AlertTriangle className="w-5 h-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" />
+                          <div className="text-xs text-amber-200 leading-relaxed tracking-wide">
+                            <strong className="text-amber-500 uppercase tracking-widest font-black">Besondere rechtliche Auflagen für Minderjährige ({clientAge} Jahre)</strong>
+                            <div className="mt-2 text-[11px]">
+                              Gemäß § 107 BGB bedarf es für einen körperlichen Eingriff wie {tattooDetails.serviceType === 'tattoo' ? 'das Tätowieren' : 'das Piercen'} der vorherigen und ausdrücklichen Zustimmung der gesetzlichen Vertreter. Um die Rechtmäßigkeit des Eingriffs nach § 223 StGB (Körperverletzung) sicherzustellen, gelten folgende zwingende Voraussetzungen:
+                              <ul className="list-disc ml-5 mt-3 space-y-2 text-amber-100">
+                                <li>Eine vollständig ausgefüllte und original unterschriebene Einverständniserklärung <strong>aller</strong> sorgeberechtigten Personen muss vorliegen.</li>
+                                <li>Physische Kopien der Personalausweise aller unterschreibenden Erziehungsberechtigten sowie des Kunden/der Kundin sind zwingend mitzubringen.</li>
+                                <li>Bei alleinigem Sorgerecht ist ein entsprechender amtlicher Nachweis (z.B. Negativbescheinigung des Jugendamtes oder familiengerichtlicher Beschluss) zwingend vorzulegen.</li>
+                                <li>Mindestens ein Erziehungsberechtigter muss beim Termin persönlich anwesend sein oder sich im Vorfeld zur Legitimation persönlich im Studio ausgewiesen haben.</li>
+                                <li>Sowohl der/dem Minderjährigen als auch den Erziehungsberechtigten ist bewusst, dass der Dienstleister das Recht hat, die Durchführung des Eingriffs auch bei vorliegenden Dokumenten jederzeit und ohne Angabe von Gründen abzulehnen.</li>
+                              </ul>
+                            </div>
                           </div>
                         </div>
-                        <label className="flex items-start space-x-2 cursor-pointer mt-2 border-t border-amber-500/10 pt-2">
-                          <input
-                            type="checkbox"
-                            checked={isParentalConsentProvided}
-                            onChange={(e) => setIsParentalConsentProvided(e.target.checked)}
-                            className="mt-0.5 accent-amber-500 rounded"
-                          />
-                          <span className="text-[10px] text-amber-500 leading-tight uppercase tracking-wider font-bold">
-                            Ich bestätige, dass eine schriftliche Einverständniserklärung meiner Erziehungsberechtigten vorliegt.
-                          </span>
-                        </label>
-                        {errors.isParentalConsentProvided && (
-                          <span className="text-[10px] text-rose-400 font-medium mt-1 block">{errors.isParentalConsentProvided}</span>
-                        )}
+                        <div className="pt-4 border-t border-amber-500/30">
+                          <label className="flex items-start space-x-3 cursor-pointer bg-black/40 p-4 rounded border border-amber-500/20 hover:border-amber-500/50 transition-all">
+                            <input
+                              type="checkbox"
+                              checked={isParentalConsentProvided}
+                              onChange={(e) => setIsParentalConsentProvided(e.target.checked)}
+                              className="mt-1 w-5 h-5 accent-amber-500 rounded flex-shrink-0 cursor-pointer"
+                            />
+                            <span className="text-[11px] text-amber-400 leading-snug uppercase tracking-widest font-bold">
+                              Ich und meine Erziehungsberechtigten haben die obigen gesetzlichen Voraussetzungen gelesen, vollumfänglich verstanden und bestätigen, dass zum Termin alle geforderten Dokumente rechtsgültig vorliegen werden.
+                            </span>
+                          </label>
+                          {errors.isParentalConsentProvided && (
+                            <span className="text-xs text-rose-400 font-bold mt-2 block px-2 animate-pulse">{errors.isParentalConsentProvided}</span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
