@@ -48,6 +48,7 @@ const INITIAL_CLIENT_DATA: ClientData = {
 };
 
 const INITIAL_TATTOO_DETAILS: TattooDetails = {
+  serviceType: 'tattoo',
   artistName: '',
   motifDescription: '',
   bodyPlacement: '',
@@ -95,6 +96,9 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
   // Signatures
   const [clientSignature, setClientSignature] = useState<string | null>(null);
   const [artistSignature, setArtistSignature] = useState<string | null>(null);
+
+  // Parental Consent Checkbox
+  const [isParentalConsentProvided, setIsParentalConsentProvided] = useState(false);
 
   // Error States
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -160,8 +164,16 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
       if (!clientData.lastName.trim()) newErrors.lastName = 'Nachname ist erforderlich';
       if (!clientData.dateOfBirth) {
         newErrors.dateOfBirth = 'Geburtsdatum ist erforderlich';
-      } else if (clientAge < 16) {
-        newErrors.dateOfBirth = 'Kunden unter 16 Jahren dürfen gesetzlich nicht tätowiert werden';
+      } else {
+        const isTattoo = tattooDetails.serviceType === 'tattoo';
+        const minAge = isTattoo ? 16 : 14;
+        const needsConsent = clientAge < 18;
+
+        if (clientAge < minAge) {
+          newErrors.dateOfBirth = `Kunden unter ${minAge} Jahren dürfen gesetzlich nicht ${isTattoo ? 'tätowiert' : 'gepierct'} werden`;
+        } else if (needsConsent && !isParentalConsentProvided) {
+          newErrors.isParentalConsentProvided = 'Bitte bestätigen Sie das Vorliegen einer Einverständniserklärung der Erziehungsberechtigten.';
+        }
       }
       if (!clientData.street.trim()) newErrors.street = 'Straße und Hausnummer sind erforderlich';
       if (!clientData.zipCode.trim()) newErrors.zipCode = 'Postleitzahl ist erforderlich';
@@ -350,6 +362,33 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
               {/* STEP 0: Stammdaten */}
               {currentStep === 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" id="client-data-form">
+                  <div className="flex flex-col space-y-1 sm:col-span-2 mb-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Art der Dienstleistung *</label>
+                    <div className="flex space-x-6 pt-1">
+                      <label className="flex items-center space-x-2 text-xs text-zinc-100 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="tattoo"
+                          checked={tattooDetails.serviceType === 'tattoo'}
+                          onChange={() => setTattooDetails(prev => ({ ...prev, serviceType: 'tattoo' }))}
+                          className="accent-amber-500 w-4 h-4"
+                        />
+                        <span className="uppercase tracking-wider font-semibold">Tattoo</span>
+                      </label>
+                      <label className="flex items-center space-x-2 text-xs text-zinc-100 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="serviceType"
+                          value="piercing"
+                          checked={tattooDetails.serviceType === 'piercing'}
+                          onChange={() => setTattooDetails(prev => ({ ...prev, serviceType: 'piercing' }))}
+                          className="accent-amber-500 w-4 h-4"
+                        />
+                        <span className="uppercase tracking-wider font-semibold">Piercing</span>
+                      </label>
+                    </div>
+                  </div>
                   <div className="flex flex-col space-y-1">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Vorname *</label>
                     <input
@@ -384,14 +423,30 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                       onChange={e => setClientData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
                     />
                     {errors.dateOfBirth && <span className="text-[10px] text-rose-400 font-medium">{errors.dateOfBirth}</span>}
-                    {isMinor && clientAge >= 16 && (
-                      <div className="flex items-start p-3 bg-amber-500/5 border border-amber-500/10 rounded mt-2" id="minor-warning">
-                        <AlertTriangle className="w-4 h-4 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <div className="text-[10px] text-amber-400 leading-normal uppercase tracking-wider">
-                          <strong>Minderjähriger Kunde ({clientAge} Jahre):</strong>
-                          <br />
-                          Tätowieren ab 16 Jahren erfordert die schriftliche Zustimmung und Personalausweis-Kopien ALLER Sorgeberechtigten beim Termin.
+                    {isMinor && clientAge >= (tattooDetails.serviceType === 'tattoo' ? 16 : 14) && (
+                      <div className="flex flex-col p-3 bg-amber-500/5 border border-amber-500/10 rounded mt-2 space-y-2 sm:col-span-2" id="minor-warning">
+                        <div className="flex items-start">
+                          <AlertTriangle className="w-4 h-4 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
+                          <div className="text-[10px] text-amber-400 leading-normal uppercase tracking-wider">
+                            <strong>Minderjähriger Kunde ({clientAge} Jahre):</strong>
+                            <br />
+                            {tattooDetails.serviceType === 'tattoo' ? 'Tätowieren ab 16 Jahren' : 'Piercen ab 14 Jahren'} erfordert die schriftliche Zustimmung und Personalausweis-Kopien der Erziehungsberechtigten beim Termin.
+                          </div>
                         </div>
+                        <label className="flex items-start space-x-2 cursor-pointer mt-2 border-t border-amber-500/10 pt-2">
+                          <input
+                            type="checkbox"
+                            checked={isParentalConsentProvided}
+                            onChange={(e) => setIsParentalConsentProvided(e.target.checked)}
+                            className="mt-0.5 accent-amber-500 rounded"
+                          />
+                          <span className="text-[10px] text-amber-500 leading-tight uppercase tracking-wider font-bold">
+                            Ich bestätige, dass eine schriftliche Einverständniserklärung meiner Erziehungsberechtigten vorliegt.
+                          </span>
+                        </label>
+                        {errors.isParentalConsentProvided && (
+                          <span className="text-[10px] text-rose-400 font-medium mt-1 block">{errors.isParentalConsentProvided}</span>
+                        )}
                       </div>
                     )}
                   </div>

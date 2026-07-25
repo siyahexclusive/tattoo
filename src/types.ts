@@ -27,6 +27,7 @@ export interface ClientData {
 }
 
 export interface TattooDetails {
+  serviceType: 'tattoo' | 'piercing';
   artistName: string;
   motifDescription: string;
   bodyPlacement: string;
