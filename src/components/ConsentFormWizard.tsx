@@ -169,10 +169,12 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
         const minAge = isTattoo ? 16 : 14;
         const needsConsent = clientAge < 18;
 
-        if (clientAge < minAge) {
-          newErrors.dateOfBirth = `Kunden unter ${minAge} Jahren dürfen gesetzlich nicht ${isTattoo ? 'tätowiert' : 'gepierct'} werden`;
-        } else if (needsConsent && !isParentalConsentProvided) {
-          newErrors.isParentalConsentProvided = 'Bitte bestätigen Sie das Vorliegen einer Einverständniserklärung der Erziehungsberechtigten.';
+        if (needsConsent && !isParentalConsentProvided) {
+          if (clientAge < minAge) {
+            newErrors.isParentalConsentProvided = `Kunden unter ${minAge} Jahren dürfen grundsätzlich nicht ${isTattoo ? 'tätowiert' : 'gepierct'} werden. Eine Ausnahme erfordert zwingend die Zustimmung.`;
+          } else {
+            newErrors.isParentalConsentProvided = 'Bitte bestätigen Sie das Vorliegen einer Einverständniserklärung der Erziehungsberechtigten.';
+          }
         }
       }
       if (!clientData.street.trim()) newErrors.street = 'Straße und Hausnummer sind erforderlich';
@@ -423,13 +425,18 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                       onChange={e => setClientData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
                     />
                     {errors.dateOfBirth && <span className="text-[10px] text-rose-400 font-medium">{errors.dateOfBirth}</span>}
-                    {isMinor && clientAge >= (tattooDetails.serviceType === 'tattoo' ? 16 : 14) && (
+                    {isMinor && (
                       <div className="flex flex-col p-4 bg-amber-500/10 border border-amber-500/30 rounded mt-2 space-y-4 sm:col-span-2 shadow-inner" id="minor-warning">
                         <div className="flex items-start">
                           <AlertTriangle className="w-5 h-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" />
                           <div className="text-xs text-amber-200 leading-relaxed tracking-wide">
                             <strong className="text-amber-500 uppercase tracking-widest font-black">Besondere rechtliche Auflagen für Minderjährige ({clientAge} Jahre)</strong>
                             <div className="mt-2 text-[11px]">
+                              {clientAge < (tattooDetails.serviceType === 'tattoo' ? 16 : 14) && (
+                                <div className="text-rose-400 font-bold mb-2 p-2 border border-rose-500/30 bg-rose-500/10 rounded">
+                                  ACHTUNG: Kunden unter {tattooDetails.serviceType === 'tattoo' ? '16' : '14'} Jahren dürfen grundsätzlich nicht {tattooDetails.serviceType === 'tattoo' ? 'tätowiert' : 'gepierct'} werden. Dies ist nur zulässig unter ständiger Aufsicht und mit ausdrücklicher, persönlicher Zustimmung der Erziehungsberechtigten vor Ort.
+                                </div>
+                              )}
                               Gemäß § 107 BGB bedarf es für einen körperlichen Eingriff wie {tattooDetails.serviceType === 'tattoo' ? 'das Tätowieren' : 'das Piercen'} der vorherigen und ausdrücklichen Zustimmung der gesetzlichen Vertreter. Um die Rechtmäßigkeit des Eingriffs nach § 223 StGB (Körperverletzung) sicherzustellen, gelten folgende zwingende Voraussetzungen:
                               <ul className="list-disc ml-5 mt-3 space-y-2 text-amber-100">
                                 <li>Eine vollständig ausgefüllte und original unterschriebene Einverständniserklärung <strong>aller</strong> sorgeberechtigten Personen muss vorliegen.</li>
