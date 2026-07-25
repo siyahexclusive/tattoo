@@ -167,7 +167,6 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
       if (!clientData.zipCode.trim()) newErrors.zipCode = 'Postleitzahl ist erforderlich';
       if (!clientData.city.trim()) newErrors.city = 'Ort ist erforderlich';
       if (!clientData.phone.trim()) newErrors.phone = 'Telefonnummer ist erforderlich';
-      if (!clientData.idCardNumber.trim()) newErrors.idCardNumber = 'Ausweisnummer ist erforderlich';
       if (!clientData.email.trim()) {
         newErrors.email = 'E-Mail ist erforderlich';
       } else if (!/\S+@\S+\.\S+/.test(clientData.email)) {
@@ -397,7 +396,7 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                     )}
                   </div>
                   <div className="flex flex-col space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Personalausweis- / Pass-Nr. *</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Personalausweis- / Pass-Nr.</label>
                     <input
                       id="input-idCardNumber"
                       type="text"
