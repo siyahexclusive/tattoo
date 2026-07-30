@@ -12,7 +12,10 @@ import {
   AlertTriangle, 
   Info,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Heart,
+  Instagram,
+  Star
 } from 'lucide-react';
 import { ClientData, TattooDetails, HealthQuestions, ConsentForm } from '../types';
 import { SignaturePad } from './SignaturePad';
@@ -33,6 +36,7 @@ const STEPS = [
   { id: 'care', label: 'Pflegehinweise', icon: FileText },
   { id: 'gdpr', label: 'DSGVO', icon: ShieldCheck },
   { id: 'signatures', label: 'Unterschriften', icon: Signature },
+  { id: 'social', label: 'Support Us', icon: Heart },
 ];
 
 const INITIAL_CLIENT_DATA: ClientData = {
@@ -96,6 +100,10 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
   // Signatures
   const [clientSignature, setClientSignature] = useState<string | null>(null);
   const [artistSignature, setArtistSignature] = useState<string | null>(null);
+
+  // Social Media Support
+  const [hasClickedInstagram, setHasClickedInstagram] = useState(false);
+  const [hasClickedGoogle, setHasClickedGoogle] = useState(false);
 
   // Parental Consent Checkbox
   const [isParentalConsentProvided, setIsParentalConsentProvided] = useState(false);
@@ -230,6 +238,12 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
     if (currentStep === 6) {
       if (!clientSignature) newErrors.clientSignature = 'Die Unterschrift des Kunden fehlt';
       if (!artistSignature) newErrors.artistSignature = 'Die Unterschrift des Tätowierers fehlt';
+    }
+
+    if (currentStep === 7) {
+      if (!hasClickedInstagram || !hasClickedGoogle) {
+        newErrors.social = 'Bitte besuchen Sie kurz beide Links (Instagram & Google), um den Vorgang abzuschließen.';
+      }
     }
 
     setErrors(newErrors);
@@ -891,6 +905,59 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                     <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-400 font-medium" id="signature-error-alert">
                       {errors.clientSignature && <p>• {errors.clientSignature}</p>}
                       {errors.artistSignature && <p>• {errors.artistSignature}</p>}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* STEP 7: Social Media Support */}
+              {currentStep === 7 && (
+                <div className="space-y-6" id="social-support-form">
+                  <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg text-center">
+                    <Heart className="w-8 h-8 text-rose-500 mx-auto mb-3" />
+                    <h3 className="text-sm font-bold text-white mb-2">Ein letzter Schritt vor dem Speichern!</h3>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-6 max-w-md mx-auto">
+                      Kleine Künstler und unabhängige Studios leben von der Unterstützung ihrer Kunden. Bitte nehmen Sie sich kurz Zeit, uns auf Instagram zu folgen und eine Google-Bewertung dazulassen. Es bedeutet uns sehr viel!
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <a
+                        href="https://www.instagram.com/siyahexclusive/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setHasClickedInstagram(true)}
+                        className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg border transition-all ${
+                          hasClickedInstagram
+                            ? 'bg-rose-500/10 border-rose-500 text-rose-500'
+                            : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-white'
+                        }`}
+                      >
+                        <Instagram className="w-4 h-4" />
+                        <span className="font-bold text-xs uppercase tracking-wider">Instagram</span>
+                        {hasClickedInstagram && <CheckCircle className="w-3.5 h-3.5 ml-1" />}
+                      </a>
+
+                      <a
+                        href="https://g.page/review"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setHasClickedGoogle(true)}
+                        className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg border transition-all ${
+                          hasClickedGoogle
+                            ? 'bg-amber-500/10 border-amber-500 text-amber-500'
+                            : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-white'
+                        }`}
+                      >
+                        <Star className="w-4 h-4" />
+                        <span className="font-bold text-xs uppercase tracking-wider">Google Bewertung</span>
+                        {hasClickedGoogle && <CheckCircle className="w-3.5 h-3.5 ml-1" />}
+                      </a>
+                    </div>
+                  </div>
+                  
+                  {errors.social && (
+                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-400 font-medium text-center">
+                      {errors.social}
                     </div>
                   )}
                 </div>

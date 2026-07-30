@@ -1,9 +1,11 @@
 import os
 import io
+import zipfile
 from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from supabase import create_client, Client
 
 # ---------------------------------------------------------------------------
 # App & CORS
@@ -36,6 +38,16 @@ app.config['SQLALCHEMY_DATABASE_URI'] = _database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-only-change-in-production')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
+
+# ---------------------------------------------------------------------------
+# Supabase Setup
+# ---------------------------------------------------------------------------
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
+
+supabase_client: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 db = SQLAlchemy(app)
 
@@ -80,11 +92,6 @@ class ConsentForm(db.Model):
     isCareInstructionsAccepted = db.Column(db.Boolean)
     pdfBlobId                  = db.Column(db.String(50))
 
-
-class PdfDocument(db.Model):
-    id        = db.Column(db.String(50),    primary_key=True)
-    blob      = db.Column(db.LargeBinary)
-    createdAt = db.Column(db.String(50))
 
 # ---------------------------------------------------------------------------
 # Database initialisation
@@ -274,35 +281,82 @@ def delete_form(form_id):
 # ---------------------------------------------------------------------------
 @app.route('/api/pdfs/<pdf_id>', methods=['GET', 'POST', 'DELETE'])
 def handle_pdfs(pdf_id):
+    if not supabase_client:
+        return jsonify({'error': 'Supabase not configured'}), 500
+
+    path_on_supa = f"{pdf_id}.pdf"
+
     if request.method == 'POST':
         file = request.files.get('file')
         if not file:
             return jsonify({'error': 'No file uploaded'}), 400
-        db.session.add(PdfDocument(
-            id        = pdf_id,
-            blob      = file.read(),
-            createdAt = request.form.get('createdAt'),
-        ))
-        db.session.commit()
+        
+        try:
+            supabase_client.storage.from_("pdfs").upload(
+                path=path_on_supa,
+                file=file.read(),
+                file_options={"content-type": "application/pdf"}
+            )
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
         return jsonify({'success': True}), 201
 
     if request.method == 'GET':
-        pdf = db.session.get(PdfDocument, pdf_id)
-        if not pdf:
-            return jsonify({'error': 'Not found'}), 404
-        return send_file(
-            io.BytesIO(pdf.blob),
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name=f'{pdf_id}.pdf',
-        )
+        try:
+            res = supabase_client.storage.from_("pdfs").download(path_on_supa)
+            return send_file(
+                io.BytesIO(res),
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=path_on_supa,
+            )
+        except Exception:
+            return jsonify({'error': 'Not found or failed to download'}), 404
 
     # DELETE
-    pdf = db.session.get(PdfDocument, pdf_id)
-    if pdf:
-        db.session.delete(pdf)
-        db.session.commit()
+    try:
+        supabase_client.storage.from_("pdfs").remove([path_on_supa])
+    except Exception:
+        pass
     return jsonify({'success': True}), 200
+
+@app.route('/api/pdfs/export/all', methods=['GET'])
+def export_all_pdfs():
+    if not supabase_client:
+        return jsonify({'error': 'Supabase not configured'}), 500
+
+    forms = ConsentForm.query.all()
+    if not forms:
+        return jsonify({'error': 'No forms found'}), 404
+
+    # Create an in-memory ZIP file
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for form in forms:
+            if form.pdfBlobId:
+                path_on_supa = f"{form.pdfBlobId}.pdf"
+                try:
+                    res = supabase_client.storage.from_("pdfs").download(path_on_supa)
+                    # Clean filename
+                    first_name = form.clientData.get('firstName', '').replace(' ', '_')
+                    last_name = form.clientData.get('lastName', '').replace(' ', '_')
+                    filename = f"Einverstaendnis_{last_name}_{first_name}_{form.pdfBlobId[-5:]}.pdf"
+                    
+                    # Add to zip
+                    zip_file.writestr(filename, res)
+                except Exception as e:
+                    print(f"Failed to download {path_on_supa}: {e}")
+                    continue
+
+    zip_buffer.seek(0)
+    
+    return send_file(
+        zip_buffer,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='all_consent_forms.zip'
+    )
 
 # ---------------------------------------------------------------------------
 # Frontend Serving (Catch-all for SPA)

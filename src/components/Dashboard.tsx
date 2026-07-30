@@ -116,6 +116,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [credentialsMessage, setCredentialsMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
+  // ZIP Download State
+  const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+
   React.useEffect(() => {
     try {
       const u = JSON.parse(sessionStorage.getItem('current_user') || '{}');
@@ -363,7 +366,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
-  // Trigger Print / PDF download of multiple selected forms
   const handleBulkPrint = async (selectedForms: ConsentForm[]) => {
     if (selectedForms.length === 0) {
       alert('Bitte wählen Sie mindestens ein Formular für den Download aus.');
@@ -372,6 +374,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
     for (const form of selectedForms) {
       await handlePrint(form);
       await new Promise(r => setTimeout(r, 500));
+    }
+  };
+
+  const handleDownloadAllZip = async () => {
+    try {
+      setIsDownloadingZip(true);
+      
+      const res = await fetch('/api/pdfs/export/all', { method: 'GET' });
+      if (!res.ok) throw new Error('ZIP Download fehlgeschlagen');
+      
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'all_consent_forms.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert('Fehler beim Herunterladen der ZIP-Datei.');
+    } finally {
+      setIsDownloadingZip(false);
     }
   };
 
@@ -392,6 +418,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
         
         <div className="flex items-center space-x-3" id="dashboard-actions">
+          <button
+            onClick={handleDownloadAllZip}
+            disabled={isDownloadingZip || forms.length === 0}
+            className="flex items-center space-x-1.5 px-4 py-2 text-[10px] font-medium uppercase tracking-widest bg-zinc-900 hover:bg-zinc-800 text-zinc-200 rounded border border-zinc-800 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Alle PDFs als ZIP herunterladen"
+          >
+            {isDownloadingZip ? <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-400" /> : <Download className="w-3.5 h-3.5 text-zinc-400" />}
+            <span>Alle PDFs (ZIP)</span>
+          </button>
+
           <button
             onClick={() => setIsQrModalOpen(true)}
             className="flex items-center space-x-1.5 px-4 py-2 text-[10px] font-medium uppercase tracking-widest bg-zinc-900 hover:bg-zinc-800 text-zinc-200 rounded border border-zinc-800 transition-all cursor-pointer"

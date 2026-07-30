@@ -11,17 +11,20 @@ services:
     buildCommand: ./build.sh
     startCommand: cd backend && gunicorn app:app -c gunicorn.conf.py
     healthCheckPath: /api/health
-
     envVars:
       # Tell Render to install Node.js alongside Python
       - key: NODE_VERSION
         value: 20
 
-      # PostgreSQL connection string — injected automatically from the database below
+      # PostgreSQL connection string — From Supabase
       - key: DATABASE_URL
-        fromDatabase:
-          name: siyah-tattoo-db
-          property: connectionString
+        sync: false
+
+      # Supabase URL and Key for storage
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
 
       # Admin credentials — fill these in the Render dashboard after deploy
       - key: ADMIN_USERNAME
@@ -38,10 +41,3 @@ services:
       # Multiple origins: https://a.netlify.app,https://custom-domain.com
       - key: CORS_ORIGINS
         sync: false
-
-# ── PostgreSQL Database ──────────────────────────────────────────────────
-databases:
-  - name: siyah-tattoo-db
-    databaseName: siyah_tattoo
-    user: siyah_tattoo
-    region: frankfurt
