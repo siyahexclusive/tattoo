@@ -938,7 +938,7 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                       </a>
 
                       <a
-                        href="https://g.page/review"
+                        href="https://g.page/r/CVpK7SqCC-8_EBM/review"
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setHasClickedGoogle(true)}
