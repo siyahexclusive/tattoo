@@ -16,6 +16,10 @@ services:
       - key: NODE_VERSION
         value: 20
 
+      # Pin Python version for psycopg2 compatibility
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
       # PostgreSQL connection string — From Supabase
       - key: DATABASE_URL
         sync: false
