@@ -24,7 +24,7 @@ import { LegalWaiverText, CareInstructionsText, GdprPrivacyText } from './Waiver
 interface ConsentFormWizardProps {
   artists: string[];
   studioName: string;
-  onComplete: (form: Omit<ConsentForm, 'id' | 'submittedAt'>) => void;
+  onComplete: (form: Omit<ConsentForm, 'id' | 'submittedAt'>) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -107,6 +107,9 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
 
   // Parental Consent Checkbox
   const [isParentalConsentProvided, setIsParentalConsentProvided] = useState(false);
+
+  // Submitting State to prevent multiple saves
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Error States
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -250,23 +253,31 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isSubmitting) return;
+
     if (validateStep()) {
       if (currentStep < STEPS.length - 1) {
         setCurrentStep(prev => prev + 1);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // Complete
-        onComplete({
-          clientData,
-          tattooDetails,
-          healthQuestions,
-          clientSignature: clientSignature!,
-          artistSignature: artistSignature!,
-          isGdprAccepted,
-          isWaiverAccepted,
-          isCareInstructionsAccepted,
-        });
+        setIsSubmitting(true);
+        try {
+          await onComplete({
+            clientData,
+            tattooDetails,
+            healthQuestions,
+            clientSignature: clientSignature!,
+            artistSignature: artistSignature!,
+            isGdprAccepted,
+            isWaiverAccepted,
+            isCareInstructionsAccepted,
+          });
+        } catch (error) {
+          console.error("Error during submission:", error);
+          setIsSubmitting(false);
+        }
       }
     }
   };
@@ -982,10 +993,11 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
             id="btn-next"
             type="button"
             onClick={handleNext}
-            className="flex items-center justify-center px-6 py-2.5 text-xs font-bold uppercase tracking-widest bg-white text-zinc-950 hover:bg-zinc-200 rounded transition-all duration-150 cursor-pointer active:scale-[0.98] shadow-sm"
+            disabled={isSubmitting}
+            className={`flex items-center justify-center px-6 py-2.5 text-xs font-bold uppercase tracking-widest bg-white text-zinc-950 hover:bg-zinc-200 rounded transition-all duration-150 shadow-sm ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-[0.98]'}`}
           >
-            {currentStep === STEPS.length - 1 ? 'Abschließen & Speichern' : 'Weiter'}
-            {currentStep < STEPS.length - 1 && <ArrowRight className="w-3.5 h-3.5 ml-2" />}
+            {isSubmitting ? 'Wird gespeichert...' : (currentStep === STEPS.length - 1 ? 'Abschließen & Speichern' : 'Weiter')}
+            {!isSubmitting && currentStep < STEPS.length - 1 && <ArrowRight className="w-3.5 h-3.5 ml-2" />}
           </button>
         </div>
       </div>

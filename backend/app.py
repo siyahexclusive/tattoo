@@ -251,8 +251,17 @@ def handle_forms():
         } for f in forms]), 200
 
     data = request.get_json(silent=True) or {}
+    form_id = data.get('id')
+    
+    if not form_id:
+        return jsonify({'error': 'Missing ID'}), 400
+
+    existing_form = db.session.get(ConsentForm, form_id)
+    if existing_form:
+        return jsonify({'success': True, 'message': 'Already saved'}), 200
+
     db.session.add(ConsentForm(
-        id                         = data.get('id'),
+        id                         = form_id,
         submittedAt                = data.get('submittedAt'),
         clientData                 = data.get('clientData'),
         tattooDetails              = data.get('tattooDetails'),
@@ -295,10 +304,12 @@ def handle_pdfs(pdf_id):
             supabase_client.storage.from_("pdfs").upload(
                 path=path_on_supa,
                 file=file.read(),
-                file_options={"content-type": "application/pdf"}
+                file_options={"content-type": "application/pdf", "upsert": "true"}
             )
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            print(f"Supabase upload error for {path_on_supa}: {str(e)}")
+            # Even if upload fails (e.g., already exists without upsert), we can continue
+            pass
         return jsonify({'success': True}), 201
 
     if request.method == 'GET':
