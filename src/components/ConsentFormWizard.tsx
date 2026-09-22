@@ -103,7 +103,6 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
 
   // Social Media Support
   const [hasClickedInstagram, setHasClickedInstagram] = useState(false);
-  const [hasClickedGoogle, setHasClickedGoogle] = useState(false);
 
   // Parental Consent Checkbox
   const [isParentalConsentProvided, setIsParentalConsentProvided] = useState(false);
@@ -244,8 +243,8 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
     }
 
     if (currentStep === 7) {
-      if (!hasClickedInstagram || !hasClickedGoogle) {
-        newErrors.social = 'Bitte besuchen Sie kurz beide Links (Instagram & Google), um den Vorgang abzuschließen.';
+      if (!hasClickedInstagram) {
+        newErrors.social = 'Bitte besuchen Sie kurz unseren Instagram Link, um den Vorgang abzuschließen.';
       }
     }
 
@@ -928,7 +927,7 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                     <Heart className="w-8 h-8 text-rose-500 mx-auto mb-3" />
                     <h3 className="text-sm font-bold text-white mb-2">Ein letzter Schritt vor dem Speichern!</h3>
                     <p className="text-xs text-zinc-400 leading-relaxed mb-6 max-w-md mx-auto">
-                      Kleine Künstler und unabhängige Studios leben von der Unterstützung ihrer Kunden. Bitte nehmen Sie sich kurz Zeit, uns auf Instagram zu folgen und eine Google-Bewertung dazulassen. Es bedeutet uns sehr viel!
+                      Kleine Künstler und unabhängige Studios leben von der Unterstützung ihrer Kunden. Bitte nehmen Sie sich kurz Zeit, uns auf Instagram zu folgen. Es bedeutet uns sehr viel!
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -946,22 +945,6 @@ export const ConsentFormWizard: React.FC<ConsentFormWizardProps> = ({
                         <Instagram className="w-4 h-4" />
                         <span className="font-bold text-xs uppercase tracking-wider">Instagram</span>
                         {hasClickedInstagram && <CheckCircle className="w-3.5 h-3.5 ml-1" />}
-                      </a>
-
-                      <a
-                        href="https://g.page/r/CQTWDHG-hpJFEBM/review"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => setHasClickedGoogle(true)}
-                        className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg border transition-all ${
-                          hasClickedGoogle
-                            ? 'bg-amber-500/10 border-amber-500 text-amber-500'
-                            : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-white'
-                        }`}
-                      >
-                        <Star className="w-4 h-4" />
-                        <span className="font-bold text-xs uppercase tracking-wider">Google Bewertung</span>
-                        {hasClickedGoogle && <CheckCircle className="w-3.5 h-3.5 ml-1" />}
                       </a>
                     </div>
                   </div>
